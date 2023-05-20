@@ -1,0 +1,216 @@
+---
+title: "Provinciale Statenverkiezingen 2023"
+subtitle: "How do political campaigns target voters?"
+author: "Fabio Votta - @favstats"
+date: "`r Sys.Date()`"
+output:
+  rmdformats::robobook:
+    highlight: kate
+---
+
+<style>
+    body .main-container {
+        max-width: 1920px !important;
+    }
+</style>
+
+
+```{r setup, include=FALSE}
+## Global options
+knitr::opts_chunk$set(
+    cache = F, 
+    echo = F, 
+    warning = F, 
+    message = F, 
+    cache.lazy = FALSE
+)
+
+
+# pacman::p_load(tidyverse, highcharter)
+library(tidyverse)
+library(highcharter)
+library(gt)
+
+
+
+options(scipen = 999)
+
+# source("helpers.R")
+
+# pro_reps <- us_advertisers %>% 
+#   filter(left_vs_right == "All Republican-supporting pages")
+
+# source("utils.R")
+library(tidyverse)
+
+# %>% 
+# 
+#     walk(browseURL)
+
+
+```
+
+
+```{r}
+# election_dat30 %>%
+# count(party,sort = T)
+
+color_dat <- tibble(
+  colors = c("#00b13d", "#80c31c", "#0a2cca", "#008067", "#bf0000", "#ff0000", "#6f2421", "#02a6e9", "#92107d", "#04d3d4", "#242b57", "#66cdaa", "#242b57", "#006b28", "#012758", "#ea5b0b", "#582c83", "#698c0c"),
+  party = c("D66", "GroenLinks", "VVD", "CDA", "SP", "PvdA", "FvD", "ChristenUnie", "50PLUS", "Alliantie", "BVNL", "DENK", "Ja21", "PvdD", "PVV", "SGP", "Volt Nederland", "BBB"))
+
+
+scale_fill_parties <- function(...){
+    ggplot2:::manual_scale(
+        'fill', 
+        values = setNames(color_dat$colors, color_dat$party), 
+        ...
+    )
+}
+scale_color_parties <- function(...){
+    ggplot2:::manual_scale(
+        'color', 
+        values = setNames(color_dat$colors, color_dat$party), 
+        ...
+    )
+}
+
+```
+
+
+
+```{r}
+# lab_dat <- readRDS("data/lab_dat.rds")
+
+
+
+election_dat30 <- readRDS("data/election_dat30.rds") %>% 
+    rename(internal_id = page_id) %>% 
+    filter(party != "And")
+
+election_dat7 <- readRDS("data/election_dat7.rds") %>% 
+    rename(internal_id = page_id) %>% 
+    filter(party != "And")
+#     count(coalition)
+
+
+fin <- (as.Date(election_dat30$ds[1])-lubridate::days(1))
+begin7 <- fin-lubridate::days(6)
+begin30 <- fin-lubridate::days(29)
+
+append_date_suffix <- function(dates){
+  dayy <- lubridate::day(dates)
+  suff <- case_when(dayy %in% c(11,12,13) ~ "th",
+                    dayy %% 10 == 1 ~ 'st',
+                    dayy %% 10 == 2 ~ 'nd',
+                    dayy %% 10 == 3 ~'rd',
+                    TRUE ~ "th")
+  paste0(dayy, suff)
+}
+
+create_date <- function(x) {
+    the_date <- format(x, "%B %d")
+    the_date <- ifelse(str_detect(the_date, " 0"),
+           str_remove(the_date, "0"),
+           the_date)
+    str_replace(the_date, 
+                as.character(lubridate::day(x)), 
+                append_date_suffix(x))
+}
+
+
+
+last7days_string <- paste0(create_date(begin7), " - ", paste(create_date(fin), lubridate::year(fin)))
+last30days_string <- paste0(create_date(begin30), " - ", paste(create_date(fin), lubridate::year(fin)))
+
+# January 26 to Febrary 24
+source("utils.R")
+
+
+# election_dat30 %>%# count(party)
+#     filter(party == "PvdD") %>% 
+#     distinct(internal_id, .keep_all = T) %>% 
+#     mutate(yo = sum(total_spend_formatted))
+#     filter(str_detect(value, "Butch"))
+#     arrange(desc(total_spend_pct))
+
+
+# election_dat30 %>% 
+#     filter(party == "PvdA") %>% 
+#     count(page_name, sort = T)
+
+# fbl <- read_csv("data/FacebookAdLibraryReport_2023-02-28_NL_last_30_days_Noord-Holland.csv") %>% 
+#     janitor::clean_names()
+# 
+# 
+# yo <- all_dat %>% 
+#     distinct(page_id, party)
+
+# fbl %>% 
+#     mutate(page_id = as.character(page_id)) %>% 
+#     left_join(yo) %>% 
+#     select(page_name, party, everything()) %>% 
+#     drop_na(party) %>% 
+#     openxlsx::write.xlsx("topspenders28thFeb.xlsx")
+```
+
+
+
+## Methodology
+
+In collaboration with [Who Targets Me](https://whotargets.me/), we monitored over 1000 Dutch political advertisers during the 2023 Provinciale Statenverkiezingen (Provincial elections) to better understand how campaigns use different targeting methods made available by Meta. To do this, we used data from the [Meta Ad Library](https://www.facebook.com/ads/library/), using the new 'Audience' data which gives some detail on how pages target their ads.
+
+To better understand the regional election, we kept only advertisers who:
+
+1. Advertised in the last 7 days (`r last7days_string`)
+2. Advertised in the last 30 days (`r last30days_string`)
+
+> Note: Meta only provides 7, 30 and 90 days windows for the targeting data in their Ad Library. Meta's data also lags by a few days. We will update this report as soon as new data is available.
+
+## Topline Statistics  {.tabset .tabset-fade .tabset-pills}
+
+
+### Meta {.tabset .tabset-fade .tabset-pills}
+
+```{r, out.width="100%"}
+hc_data <- readRDS("data/hc_data.rds")
+
+color_order <- hc_data %>% 
+  distinct(party, .keep_all = T) %>% 
+  arrange(party) %>% 
+  pull(colors)
+
+
+hc_data %>%
+  mutate(`Daily Spend` = spend) %>% 
+  mutate(Date = date_produced) %>% 
+  hchart("area", hcaes(x = Date, y = `Daily Spend`, group = party, fill = colors)) %>%
+  hc_plotOptions(    area = list(
+      stacking = "normal",
+      lineWidth = 1,
+      marker = list(enabled = FALSE)
+    )) %>%
+  # hc_legend(share = TRUE)%>%
+  hc_colors(color_order)%>%
+  hc_chart(events = list(load = JS("function() {
+  var chart = this;
+  chart.series[0].setVisible(false)
+  chart.series[1].setVisible(false)
+  chart.series[2].setVisible(false)
+  chart.series[3].setVisible(false)
+  chart.series[4].setVisible(false)
+  chart.series[5].setVisible(false)
+  chart.series[6].setVisible(false)
+  chart.series[7].setVisible(false)
+  chart.series[8].setVisible(false)
+  chart.series[9].setVisible(false)
+  chart.series[10].setVisible(false)
+  chart.series[11].setVisible(false)
+  }"))) %>%
+  hc_tooltip(
+    shared = TRUE,
+    positioner = JS("function (labelWidth, labelHeight, point) {
+        return { x: 200, y: this.chart.plotTop };
+    }")
+  ) 
+```
