@@ -35,46 +35,16 @@ library(gt)
 
 options(scipen = 999)
 
-# source("helpers.R")
-
-# pro_reps <- us_advertisers %>% 
-#   filter(left_vs_right == "All Republican-supporting pages")
-
-# source("utils.R")
 library(tidyverse)
 
-# %>% 
-# 
-#     walk(browsLYRL)
-
-# da30 %>% count(main_currency, sort = T)
-
-# ww <-  readRDS("data/election_dat30.rds")
-
-# ww %>% 
-#   count(party)
-#   filter(party == "OTHER") %>% 
-#   distinct(page_id, .keep_all = T) %>% 
-#   pull(page_name)
-#   distinct(party, .keep_all = T)
 ```
 
 
 ```{r}
-# election_dat30 %>%
-# count(party,sort = T)
-# Diğ
-# Bağ
-# Mem
-
-# library(tibble)
-
 
 color_dat <- tibble(colors = c("#5493ce", "#1b5cc7", "#01783d", "#ef3f24", "#ee808f"),
                     party = c("EL", "ND", "PASOK", "MeRA25", "SYRIZA"))
 
-
-# color_dat
 
 
 scale_fill_parties <- function(...){
@@ -92,37 +62,11 @@ scale_color_parties <- function(...){
     )
 }
 
-# election_dat30 %>% 
-#   # filter(party == "Drugo") %>% 
-#   # select(internal_id, page_name) %>% 
-#   # distinct(internal_id, .keep_all = T)
-#   count(party, sort = T)
-
-
-# election_dat30  %>% 
-#   mutate(party = case_when(
-#     str_detect(page_name, "\\bDEVA\\b|\\bDeva\\b|Ali Babacan")  ~ "DEVA",
-#     str_detect(page_name, "Yeniden Refah Partisi|Yeniden REFAH Partisi|Şükrü Yılmaz")  ~ "YRP",
-#     str_detect(page_name, "ıdvan Eşin|Osman Seçgin")  ~ "BBP",
-# 
-#     
-#     # str_detect(party, "Diğ")  ~ "Other",
-#     T ~ party  )) %>%
-#   filter(party == "Diğ") %>% 
-#   distinct(page_name, .keep_all = T)
-#   count(par)
-
-# election_dat30 %>% count(party) %>% 
-#   mutate(party = ifelse(str_detect(party, "25"), "MeRA25", party))
-# filter(party == "<U+039C><U+03AD><U+03A1><U+0391>25	")
 ```
 
 
 
 ```{r}
-# lab_dat <- readRDS("data/lab_dat.rds")
-
-
 
 election_dat30 <- readRDS("data/election_dat30.rds") %>% 
     rename(internal_id = page_id)  %>% 
@@ -190,37 +134,9 @@ create_date <- function(x) {
 last7days_string <- paste0(create_date(begin7), " - ", paste(create_date(fin), lubridate::year(fin)))
 last30days_string <- paste0(create_date(begin30), " - ", paste(create_date(fin), lubridate::year(fin)))
 
-# January 26 to Febrary 24
 source("utils.R")
 
 
-# election_dat30 %>%# count(party)
-#     filter(party == "PvdD") %>% 
-#     distinct(internal_id, .keep_all = T) %>% 
-#     mutate(yo = sum(total_spend_formatted))
-#     filter(str_detect(value, "Butch"))
-#     arrange(desc(total_spend_pct))
-
-
-# election_dat30 %>% 
-#     filter(party == "PvdA") %>% 
-#     count(page_name, sort = T)
-
-# fbl <- read_csv("data/FacebookAdLibraryReport_2023-02-28_NL_last_30_days_Noord-Holland.csv") %>% 
-#     janitor::clean_names()
-# 
-# 
-# yo <- all_dat %>% 
-#     distinct(page_id, party)
-
-# fbl %>% 
-#     mutate(page_id = as.character(page_id)) %>% 
-#     left_join(yo) %>% 
-#     select(page_name, party, everything()) %>% 
-#     drop_na(party) %>% 
-#     openxlsx::write.xlsx("topspenders28thFeb.xlsx")
-
-# election_dat30 %>% distinct(page_i) count(party, sort = T)
 ```
 
 
@@ -239,129 +155,13 @@ To better understand the election, we kept only advertisers who:
 ## Topline Statistics  {.tabset .tabset-fade .tabset-pills}
 
 ```{r}
-# nlsb <- read_csv("data/NL-SpendingsByAdvertisers.csv")
-# nl_advertisers <- read_csv("data/nl_advertisers.csv") %>% 
-#     filter(party != "And")
 
 total_spend_id <- election_dat30 %>% 
     filter(main_currency == "EUR") %>% 
   distinct(internal_id, .keep_all = T) %>% 
   group_by(party) %>% 
   summarize(total_spend_formatted = sum(total_spend_formatted)) %>% 
-  ungroup() #%>% 
-  # rename(advertiser_id = internal_id)
-
-
-# total_spend_id %>%
-#   group_by(party) %>% 
-#   summarise(total_spend_formatted = sum(total_spend_formatted))
-
-# more_data <- dir("data/reports", full.names = T) %>% 
-#     map_dfr(~read.csv(.x) %>% mutate(path = .x)) %>% 
-#     mutate(date_produced = str_remove_all(path, "data/reports/FacebookAdLibraryReport_|_NL_yesterday_advertisers\\.csv")) %>% 
-#     mutate(date_produced = lubridate::ymd(date_produced)) %>% 
-#     janitor::clean_names()%>% rename(advertiser_id = page_id) %>% 
-#     mutate(spend = readr::parse_number(amount_spent_LYR)) %>% 
-#     # bind_rows(nlsb %>% 
-#     # janitor::clean_names() ) %>% 
-#     mutate(spend = ifelse(spend == 100, 50, spend))%>% 
-#     filter(date_produced >= as.Date("2023-02-11")) 
-
-# Count the number of days with spending under 100 and calculate the sum of spending above 100
-# spending_summary <- more_data %>%
-#   mutate(under100 = spend == 50) %>%
-#   group_by(advertiser_id) %>%
-#   summarize(
-#     days_under_100 = sum(under100),
-#     sum_above_100 = sum(spend[spend > 50])
-#   )
-# 
-# # Calculate the average daily spending for the days with spending equal to 50
-# average_daily_spending <- total_spend_id  %>% 
-#   inner_join(spending_summary%>%
-#   mutate(advertiser_id = as.character(advertiser_id)), by = "advertiser_id") %>%
-#   mutate(
-#     spending_under_100 = total_spend_formatted - sum_above_100,
-#     avg_daily_spend = spending_under_100 / days_under_100
-#   ) %>%
-#   select(advertiser_id, avg_daily_spend)
-# 
-# # Replace the 50s in the daily_spending dataframe with the calculated average daily spending
-# imputed_daily_spending <- more_data %>%
-#   mutate(advertiser_id = as.character(advertiser_id)) %>% 
-#   left_join(average_daily_spending, by = "advertiser_id") %>%
-#   mutate(spend = ifelse(spend == 50, avg_daily_spend, spend)) %>%
-#   select(-avg_daily_spend)
-
-
-# that_all_spending <- more_data %>% 
-#   mutate(under100 = spend == 50)  %>% 
-#   filter(!under100)%>% 
-#     # drop_na(party) %>%
-#     group_by(advertiser_id) %>% 
-#     summarize(spend  = sum(spend)) %>% 
-#     ungroup()
-# 
-# 
-# 
-# under100_spending_count <- more_data %>% 
-#   mutate(under100 = spend == 50)  %>% 
-#   count(advertiser_id, under100, name = "days_under_100") %>% 
-#   filter(under100)%>% 
-#   mutate(advertiser_id = as.character(advertiser_id))
-# 
-#  under100_spending <- more_data %>% 
-#   mutate(under100 = spend == 50) %>% 
-#   filter(under100)%>% 
-#   mutate(advertiser_id = as.character(advertiser_id))
-#  
-#  added_spending <- under100_spending %>% 
-#    left_join( that_all_spending %>% 
-#   mutate(advertiser_id = as.character(advertiser_id)) %>% 
-#   # select(-total_spend_formatted)
-#   left_join(total_spend_id) %>% 
-#   mutate(diff = total_spend_formatted-spend) %>% 
-#     select(advertiser_id, diff)) %>% 
-#   left_join(under100_spending_count) %>% 
-#   mutate(spend_per_day = diff/days_under_100)
-#  
-# 
-#   
-# # added_spending <- that_all_spending %>% 
-# #   mutate(advertiser_id = as.character(advertiser_id)) %>% 
-# #   # select(-total_spend_formatted)
-# #   left_join(total_spend_id) %>% 
-# #   mutate(diff = total_spend_formatted-spend) %>% 
-# #   left_join(under100_spending) %>% 
-# #   mutate(spend_per_day = diff/days_under_100) %>% 
-# #   left_join(nl_advertisers %>% select(advertiser_id = page_id, party) %>% mutate(advertiser_id = as.character(advertiser_id)))
-# 
-# fixed_more_data <- added_spending %>% 
-#   mutate(advertiser_id = as.character(advertiser_id)) %>% 
-#   # left_join(added_spending %>% select(-spend), by = "advertiser_id") %>% 
-#   arrange(spend) %>% 
-#   # filter(party == "PvdA") %>% 
-#   mutate(spend = ifelse(spend == 50 & !is.na(spend_per_day), spend_per_day, spend)) %>% 
-#   bind_rows( more_data %>% 
-#   mutate(under100 = spend == 50)  %>% 
-#   filter(!under100) %>% 
-#   mutate(advertiser_id = as.character(advertiser_id)))
-# 
-# # fixed_more_data %>% #View
-# #   summarize(spend2 = sum(spend2),
-# #             spend = sum(spend))
-# 
-# 
-# fixed_more_data %>% 
-#   filter(page_name == "PvdA Provincie Utrecht") %>% 
-#   summarize(spend = sum(spend))
-# 
-# total_spend_id %>% 
-#   filter(advertiser_id == "377484722432934")
-# 
-# more_data %>% 
-#   mutate(under100 = spend == 50)  %>% 
-#   filter(advertiser_id == "377484722432934")
+  ungroup() 
 ```
 
 
@@ -746,15 +546,6 @@ col_each30 <- election_dat30 %>%
     })
 
 
-# calc_targeting()
-
-# 
-# spend_on_each_lombardy30 %>% 
-#     ggplot(aes(target, perc)) +
-#     geom_col(aes(fill = coalition)) +
-#     coord_flip() +
-#     facet_wrap(~coalition) +
-#     theme(legend.position = "none")
 
 plot_geography <- function(x) {
     
@@ -814,8 +605,6 @@ library(tidytext)
 plot_geography(col_each30) +
     scale_fill_parties()
 
-# col_each30 %>%
-#     mutate(target = reorder_within(target, perc, party))
 ```
 
 
@@ -1017,23 +806,7 @@ library(tidytext)
 
 ### `r last30days_string` (Last 30 days)
 
-```{r, eval = F}
-contested_dat30 %>% 
-    filter(party == "SDP")
 
-contested_dat30  %>% 
-    filter(party == "SDP") %>% 
-    group_by(party) %>%
-    arrange(desc(perc)) %>% 
-    slice(1:10) %>% 
-    ungroup()
-
-contested_dat30 %>% 
-    group_by(party) %>%
-    arrange(desc(perc)) %>% 
-    slice(1:10) %>% 
-  dput()
-```
 
 
 ```{r, fig.width=16, fig.height=8, dpi=300}
@@ -1085,20 +858,6 @@ Here, we show the *top most contested audiences*, i.e. where all parties have sp
 ### `r last30days_string` (Last 30 days)
 
 ```{r, fig.width  = 13, fig.height=15}
-# election_dat30 %>% 
-#     count(party, sort = T) %>% 
-#     pull(party) %>% 
-#     dput()
-
-
-
-
-
-
-
-# get_contested_graph <- function(ppp, col_string, col_colors) {
-
-
 
 
 get_contested_graph <- function(ppp) {
@@ -1175,29 +934,16 @@ contested_dat %>% #count(party) %>% pull(party) %>% unique() %>% dput()
 }
 
 
-# c("Terzo Polo", "Coalizione di centro-destra", "Coalizione di centro-sinistra", 
-# "Unione Popolare")
 
 ```
 
 
 ```{r, fig.width  = 11, fig.height=15}
-# GroenLinks	3235		
-# VVD	972		
-# PvdA	706		
-# CDA	604		
-# SP	388		
-# PvdD	352		
-# PVV	243		
-# D66	214		
-# FvD	177		
-# Ja21	149	
 # main_parties <- c("VVD", "FvD", "GroenLinks", "PvdA", "CDA", "SP", "PVV", "D66", "PvdD", "Ja21", "CDA")
-remove_parties <- c("YRP", "DEVA")
 # debugonce(get_contested_graph)
 election_dat30 %>% 
     # filter(party %in% main_parties) %>% 
-    filter(!(party %in% remove_parties)) %>%
+    # filter(!(party %in% remove_parties)) %>%
     get_contested_graph()  +
     scale_fill_parties()
 
@@ -1211,7 +957,7 @@ election_dat30 %>%
 
 election_dat7 %>% 
     # filter(party %in% main_parties) %>% 
-    filter(!(party %in% remove_parties)) %>%
+    # filter(!(party %in% remove_parties)) %>%
     get_contested_graph() +
     scale_fill_parties()
 ```
@@ -1479,27 +1225,6 @@ age_targeting <- election_dat30 %>%
     group_split(party) %>% 
     map_dfr(get_targ_perc, "age")
     
-# age_targeting %>% 
-#      mutate(coalition = fct_relevel(coalition, c("Coalizione di centro-sinistra",
-#                                   "Terzo Polo",
-#                                   "Coalizione di centro-destra"))) %>% 
-#     filter(!(value %in% 13:17)) %>% 
-#     ggplot(aes(value, perc, fill = coalition)) +
-#     geom_col() +
-#     facet_wrap(~coalition) +
-#     ggthemes::theme_hc() +
-#     scale_fill_manual(values = c("#ef3e3e", "#0039aa", "#0a6be1")) +
-#     theme(legend.position = "none") +
-#     scale_y_continuous(labels = scales::percent) +
-#     scale_x_discrete(breaks = c("18", "24",
-#                                 "34", "44",
-#                                 "54", "65+")) +
-#     labs(y = "% Budget Spend on Age")
-
-
-# lombardy30 %>% 
-#     group_split(coalition, election) %>% 
-#     map_dfr(get_targ_perc, "age")
     
 age_targeting %>% 
      # mutate(coalition = fct_relevel(coalition, c("Coalizione di centro-sinistra",
