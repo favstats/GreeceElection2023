@@ -1,7 +1,7 @@
 ---
 title: "2023 Greek legislative election"
 subtitle: "How do political campaigns target voters?"
-author: "Fabio Votta - @favstats"
+author: "Fabio Votta - @favstats\n\nAlexandros Gotinakos - @gotinakos"
 date: "`r Sys.Date()`"
 output:
   rmdformats::robobook:
@@ -67,7 +67,6 @@ scale_color_parties <- function(...){
 
 
 ```{r}
-
 election_dat30 <- readRDS("data/election_dat30.rds") %>% 
     rename(internal_id = page_id)  %>% 
   mutate(party = case_when(
@@ -103,8 +102,8 @@ election_dat7 <- readRDS("data/election_dat7.rds") %>%
   )) %>% 
   filter(!(party %in% c("GOV", "OTHER", "ΠΕ")))
 
-saveRDS(election_dat30, "data/election_dat30.rds")
-saveRDS(election_dat7, "data/election_dat7.rds")
+# saveRDS(election_dat30, "data/election_dat30.rds")
+# saveRDS(election_dat7, "data/election_dat7.rds")
 
 fin <- (as.Date(election_dat30$ds[1])-lubridate::days(1))
 begin7 <- fin-lubridate::days(6)
@@ -136,15 +135,14 @@ last7days_string <- paste0(create_date(begin7), " - ", paste(create_date(fin), l
 last30days_string <- paste0(create_date(begin30), " - ", paste(create_date(fin), lubridate::year(fin)))
 
 source("utils.R")
-
-
 ```
 
 
+## {.unlisted .unnumbered .tabset .tabset-fade .tabset-pills}
 
-## Methodology
+### Methodology
 
-In collaboration with [Who Targets Me](https://whotargets.me/), we monitored over 300 political advertisers in Greece during the 2023 Greek parliamantary election to better understand how campaigns use different targeting methods made available by Meta. To do this, we used data from the [Meta Ad Library](https://www.facebook.com/ads/library/), using the new 'Audience' data which gives some detail on how pages target their ads.
+In collaboration with [Who Targets Me](https://whotargets.me/), we monitored over 300 political advertisers in Greece during the 2023 Greek parliamantary election to better understand how campaigns use different targeting methods made available by Meta. To do this, we used data from the [Meta Ad Library](https://www.facebook.com/ads/library/), using the new 'Audience' data which gives some detail on how pages target their ads. 
 
 To better understand the election, we kept only advertisers who:
 
@@ -152,6 +150,55 @@ To better understand the election, we kept only advertisers who:
 2. Advertised in the last 30 days (`r last30days_string`)
 
 > Note: Meta only provides 7, 30 and 90 days windows for the targeting data in their Ad Library. Meta's data also lags by a few days. We will update this report as soon as new data is available.
+
+We also include spending data from the [Google Transparency Report](https://transparencyreport.google.com/political-ads/region/GR), however the data on targeting criteria reported here exclusively refers to Meta platforms.
+
+### About Us
+
+
+```{r, echo=F}
+library(htmltools)
+library(bs4cards)
+
+
+cards <- function(title, text, link, image) {
+  div(class = "card",
+      div(class = "card-body pb-5",
+          h6(class = "card-title mb-0", title)),
+      img(class = "card-img-top", src = image, style="object-fit: cover; height: 200px; width: 100%;"),
+          p(class = "card-text", text),
+          a(href = link, class = "btn btn-primary", "Link"))
+}
+
+div(class = "row",
+    div(class = "col-sm-6 col-md-4",
+        cards(
+          "Alexandros Gotinakos",
+          "This is a longer card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.",
+          "#",
+          "https://pbs.twimg.com/profile_images/1524724861444231168/tiFbjmfz_400x400.jpg"
+        )
+    ),
+    div(class = "col-sm-6 col-md-4",
+        cards(
+          "Fabio Votta",
+          "Ph.D. candidate in Political Communication at the University of Amsterdam who studies (online) political microtargeting and its usage around the world.",
+          "https://twitter.com/favstats",
+          "https://www.uva.nl/binaries/_ht_1677599571673/cardmedium/content/gallery/personen/v/o/fabio-votta.jpg"
+        )
+    ),
+    div(class = "col-sm-6 col-md-4",
+        cards(
+          "Who Targets Me",
+          "Grassroots activist group advocating for transparency in the digital age by monitoring political adverts on social media and their impact on democracy.",
+          "#",
+          "https://whotargets.me/wp-content/uploads/2020/06/wtm_logo_2020.png"
+        )
+    )
+)
+
+```
+
 
 ## Topline Statistics  {.tabset .tabset-fade .tabset-pills}
 
@@ -339,8 +386,10 @@ add_ribbons2 <- function(x, adv, col) {
 
 ```
 
+### Meta {.tabset .tabset-fade .tabset-pills}
 
-### `r last30days_string` (Last 30 days)
+
+#### `r last30days_string` (Last 30 days)
 
 
 In total, political parties spend €`r scales::comma_format()(sum30$total_spend_formatted)` and ran `r sum30$total_num_ads` ad copies on Meta in this timeframe.
@@ -427,7 +476,7 @@ add_ribbons("SYRIZA", "#ee808f")
 
 
 
-### `r last7days_string` (Last 7 days)
+#### `r last7days_string` (Last 7 days)
 
 In total, political parties spend €`r scales::comma_format()(sum7$total_spend_formatted)` and ran `r sum7$total_num_ads` ad copies on Meta in this timeframe.
 
@@ -455,6 +504,116 @@ add_ribbons("SYRIZA", "#ee808f")
 
 ```
 
+### Google {.tabset .tabset-fade .tabset-pills}
+
+
+
+```{r, fig.width=12, fig.height=8, dpi=300}
+# ggl_daily <- readRDS("data/daily_spending.rds")
+ggl_spend <- readRDS("data/ggl_spend.rds")
+
+
+
+# plotly::ggplotly(ht)
+ 
+ 
+  # ggl_daily %>%
+  #   rename(Advertiser_ID = advertiser_id) %>%
+  #   left_join(ggl_spend %>% distinct(Advertiser_ID, party1)) %>% 
+  #   janitor::clean_names()  %>% 
+  #   rename(party = party1) %>% 
+  #   mutate(date_produced = lubridate::ymd(date)) %>%
+  #   mutate(spend = readr::parse_number(str_remove(eur_amount, "\\."))) %>%  
+  #   group_by(date_produced, party) %>% 
+  #   summarize(spend  = sum(spend)) %>% 
+  #   ungroup() %>% 
+  #  mutate(party = ifelse(party == "JA21", "Ja21", party)) %>% 
+  #   group_by(party) %>% 
+  #   summarize(spend = sum(spend))
+```
+
+For Google platforms, data accessed via the [Google Transparency Report](https://transparencyreport.google.com/political-ads/region/GR) provides exact spending on how much money was spent by parties in last 30 and 7 days.
+
+```{r}
+ggl_all <- readRDS("data/ggl_all.rds")
+ggl_all7 <- readRDS("data/ggl_all7.rds")
+
+sum30_ggl <- ggl_all %>% 
+    mutate(total_spend_formatted = parse_number(`Total Spend`)) %>% 
+    # distinct(internal_id, .keep_all = T) %>% 
+    summarize(total_spend_formatted = sum(total_spend_formatted),
+              total_num_ads = sum(as.numeric(`Number of Ads`)))
+
+sum7_ggl <- ggl_all7 %>% 
+    mutate(total_spend_formatted = parse_number(`Total Spend`)) %>% 
+    # distinct(internal_id, .keep_all = T) %>% 
+    summarize(total_spend_formatted = sum(total_spend_formatted),
+              total_num_ads = sum(as.numeric(`Number of Ads`)))
+
+```
+
+
+
+#### `r last30days_string` (Last 30 days)
+
+
+In total, political parties spend €`r scales::comma_format()(sum30_ggl$total_spend_formatted)` and ran `r sum30_ggl$total_num_ads` ad copies on Google in this timeframe.
+
+```{r}
+
+ggl_all %>% 
+  arrange(desc(parse_number(`Total Spend`))) %>% 
+  gt(
+    rowname_col = "Coalizione/Partito"
+    # groupname_col = "group"
+  ) %>% 
+  fmt_markdown(columns = everything())  %>% 
+  cols_align(
+    align = "center"
+  ) %>% 
+  gtExtras::gt_theme_538() %>% 
+  tab_options(table.width = pct(100)) %>%
+add_ribbons2("EL", "#5493ce") %>%
+add_ribbons2("ND", "#1b5cc7") %>%
+add_ribbons2("PASOK", "#01783d") %>%
+add_ribbons2("MeRA25", "#ef3f24") %>%
+add_ribbons2("SYRIZA", "#ee808f")  %>%
+add_ribbons2("KKE", "darkred") 
+```
+
+#### `r last7days_string` (Last 7 days)
+
+In total, political parties spend €`r scales::comma_format()(sum7_ggl$total_spend_formatted)` and ran `r sum7_ggl$total_num_ads` ad copies on Google in this timeframe.
+
+
+```{r}
+ggl_all7 %>% 
+  arrange(desc(parse_number(`Total Spend`))) %>% 
+  gt(
+    rowname_col = "Coalizione/Partito"
+    # groupname_col = "group"
+  ) %>% 
+  fmt_markdown(columns = everything())  %>% 
+  cols_align(
+    align = "center"
+  ) %>% 
+  gtExtras::gt_theme_538() %>% 
+  tab_options(table.width = pct(100)) %>%
+add_ribbons2("EL", "#5493ce") %>%
+add_ribbons2("ND", "#1b5cc7") %>%
+add_ribbons2("PASOK", "#01783d") %>%
+add_ribbons2("MeRA25", "#ef3f24") %>%
+add_ribbons2("SYRIZA", "#ee808f")  %>%
+add_ribbons2("KKE", "darkred") 
+```
+
+
+### Combined Stats
+
+
+<!-- #### Meta vs. Google -->
+
+![](img/ggl_vs_meta.png)
 
 
 ## Spending per Targeting Criteria {.tabset .tabset-fade .tabset-pills}
@@ -1071,6 +1230,193 @@ tm <- treemap(region_dat, index = c("party", "region"),
 
 
 ```
+
+
+#### Cities (Maps) {.tabset .tabset-fade .tabset-pills}
+
+```{r, message=F, warning=F, eval = F}
+    library(sf)
+geo <- sf::st_read("data/geonames-all-cities-with-a-population-1000@public.geojson", quiet = T) 
+
+geo_region <- sf::st_read("https://geodata.gov.gr/geoserver/wfs/?service=WFS&version=1.0.0&request=GetFeature&typeName=geodata.gov.gr:d7f50467-e5ef-49ac-a7ce-15df3e2ed738&outputFormat=application/json&srsName=epsg:2100")
+  
+    geo_transformed <- st_transform(geo, crs = 2100) # GGRS87 / Greek Grid corresponds to EPSG:2100
+```
+
+
+```{r, eval = F}
+elex_dat %>% 
+      # filter(name %in% c("Athens", "Thessaloniki", "Pátrai", "Piraeus", "Larissa", "Heraklion", "Kalamaria")) %>% 
+  arrange(desc(perc)) %>% 
+  filter(is.na(cou_name_en)) %>% 
+  distinct(name, .keep_all = T)
+
+
+library(tidygeocoder)
+
+# geocode the addresses
+lat_longs <- elex_dat %>% 
+      # filter(name %in% c("Athens", "Thessaloniki", "Pátrai", "Piraeus", "Larissa", "Heraklion", "Kalamaria")) %>% 
+  arrange(desc(perc)) %>% 
+  filter(is.na(cou_name_en)) %>%
+  geocode(value, method = 'osm', lat = latitude , long = longitude)
+
+saveRDS(lat_longs, "data/lat_longs.rds")
+
+
+lat_longs %>% 
+  select(name, latitude, longitude) %>% 
+  slice(1:10) %>% print
+
+
+lat_longs_sf <- lat_longs %>%
+  filter(!is.na(latitude) & !is.na(longitude)) %>%  # remove rows with NA coordinates
+  st_as_sf(coords = c("longitude", "latitude"), crs = 4326) %>% 
+  st_transform(crs = 2100)
+  select(geometry, everything())# WGS 84
+
+# Perform the spatial join
+joined <- st_join(lat_longs_sf, elex_dat%>% 
+  select(geometry, everything()))
+
+saveRDS(lat_longs_sf, "data/lat_longs_sf.rds")
+```
+
+```{r, eval = F}
+lat_longs <- readRDS("data/lat_longs.rds")
+
+lat_longs_sf <- lat_longs %>%
+  filter(!is.na(latitude) & !is.na(longitude)) %>%  # remove rows with NA coordinates
+  st_as_sf(coords = c("longitude", "latitude"), crs = 4326) %>% 
+  st_transform(crs = 2100)
+  # select(geometry, everything())# WGS 84
+# election_dat30 %>%
+#   filter(location_type == "CITY") %>% 
+#   mutate(name = str_remove(value, ", Greece")) %>% 
+#   left_join(geo)
+#   count(value, sort = T)
+```
+
+
+```{r}
+total_sppppeen <- election_dat30 %>%
+               filter(main_currency=="EUR") %>% 
+        distinct(internal_id, .keep_all = T)  %>%
+        # mutate(total_spend = readr::parse_number(total_spend_formatted)) %>%
+        mutate(total_spend = ifelse(total_spend_formatted == 100, 1, total_spend_formatted)) %>%
+        select(internal_id, total_spend, party) %>%
+        arrange(desc(total_spend)) %>%
+      group_by(party) %>% 
+        summarize(totalooo = sum(total_spend)) %>% 
+      ungroup()
+```
+
+
+```{r}
+retrieve_maps <- function(partyyy) {
+  elex_dat <- election_dat30 %>%
+  filter(location_type == "CITY") %>%
+  distinct(value) %>%
+  mutate(name = str_remove(value, ",.*")) %>% 
+  add_count(name) %>% 
+  filter(n == 1) %>% 
+  left_join(geo_transformed  %>% 
+  add_count(name) %>% 
+  filter(n == 1)) %>% 
+  right_join(election_dat30 %>% 
+               filter(main_currency=="EUR") %>% 
+  filter(location_type == "CITY")  %>%
+  mutate(total_spend = total_spend_formatted*total_spend_pct) %>% 
+  group_by(party, value) %>% 
+  summarize(total_spend = sum(total_spend)) %>% 
+    ungroup() %>% 
+    left_join(total_sppppeen) %>% 
+    mutate(perc = total_spend/totalooo*100))  %>%
+  bind_rows(lat_longs_sf, .) %>% 
+  filter(party == partyyy) %>% 
+  distinct(party, name, .keep_all = T)
+  
+  
+  
+geo_region %>% 
+    ggplot(aes(geometry = geometry))  +
+    theme_void() +
+    # colorspace::scale_fill_binned_sequential(palette = "Peach",
+            # na.value = "lightgrey")   +
+    geom_sf(fill = "lightgrey", alpha = 0.5) +
+    geom_sf(data =  elex_dat  %>% 
+            arrange(perc), aes(geometry = geometry, color = perc, size = perc))  +
+  # geom_sf(data = elex_dat %>% 
+  #           arrange(perc), aes(geometry = geometry, color = perc, size = perc)) +
+  # facet_wrap(~party) +
+    colorspace::scale_color_binned_sequential(palette = "Viridis",
+            na.value = "gray10") +
+    theme(legend.position = "bottom")+ 
+    guides(color = guide_colourbar(title = "% of Budget Spend", barwidth = 15, barheight = 0.5), size = NULL) + scale_size(guide = 'none')  +
+  ggrepel::geom_text_repel(
+    data = elex_dat %>%
+      drop_na(cou_name_en) %>% 
+      bind_rows(lat_longs_sf) %>% 
+      filter(name %in% c("Athens", "Thessaloníki", "Larissa", "Heraklion", "Kalamaria")) %>% 
+            #     group_by(party) %>%
+            # arrange(-perc) %>% 
+            #   slice(1:10) %>% 
+            #   ungroup() %>% 
+              distinct(name, .keep_all = T),
+    aes(label = name, geometry = geometry),
+    stat = "sf_coordinates", #max.overlaps = 1,
+    min.segment.length = 0
+  )
+
+ggsave(paste0("img/", partyyy, "_maps.png"), width = 12, height = 12, dpi = 900, bg  = "white")
+
+}
+
+```
+
+
+```{r, eval = F}
+
+# retrieve_maps("MeRA25")
+
+c("ND", "SYRIZA", "PASOK", "EL", "MeRA25") %>%
+walk(retrieve_maps)
+# plot(geo_region)
+# 
+# geo %>%
+#   slice(1) %>% 
+#   pull(geometry)
+# 
+# geo_region %>%
+#   slice(1) %>% 
+#   pull(geometry)
+# 
+# 
+#  elex_dat %>%
+#       drop_na(cou_name_en) %>% 
+#       bind_rows(lat_longs_sf) %>% 
+#    arrange(desc(value))
+```
+
+##### ND
+
+![](img/nd_maps.png)
+
+##### SYRIZA
+
+![](img/SYRIZA_maps.png)
+
+##### PASOK
+
+![](img/PASOK_maps.png)
+
+##### EL
+
+![](img/EL_maps.png)
+
+##### ΜeRΑ25
+
+![](img/MeRA25_maps.png)
 
 
 ## Geo Exclusion {.tabset .tabset-fade .tabset-pills}
