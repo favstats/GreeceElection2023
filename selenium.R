@@ -355,7 +355,7 @@ retrieve_spend_custom <- function(id, from, to) {
 
 ggl_sel_sp <- unique(ggl_spend$Advertiser_ID) %>%
   # .[22] %>%
-  map_dfr_progress(~{retrieve_spend_custom(.x, "2023-04-17", "2023-05-16")})
+  map_dfr_progress(~{retrieve_spend_custom(.x, "2023-04-18", "2023-05-17")})
 
 # ggl_sel_sp %>%
 # filter(advertiser_id %in% "AR09355418985304162305")
@@ -382,11 +382,12 @@ saveRDS(ggl_sel_sp, file = "data/ggl_sel_sp.rds")
 
 ggl_sel_sp7 <- unique(ggl_spend$Advertiser_ID) %>%
   # .[22] %>%
-  map_dfr_progress(~{retrieve_spend_custom(.x, "2023-05-10", "2023-05-16")})
+  map_dfr_progress(~{retrieve_spend_custom(.x, "2023-05-11", "2023-05-17")})
 
 misssss7 <- ggl_sel_sp7$advertiser_id %>% setdiff(unique(ggl_spend$Advertiser_ID), .)
 
+misss <- retrieve_spend_custom("AR14725485108811268097", "2023-05-11", "2023-05-17")
 
-saveRDS(ggl_sel_sp7, file = "data/ggl_sel_sp7.rds")
+saveRDS(ggl_sel_sp7 %>% bind_rows(misss), file = "data/ggl_sel_sp7.rds")
 
 
