@@ -174,9 +174,9 @@ div(class = "row",
     div(class = "col-sm-6 col-md-4",
         cards(
           "Alexandros Gotinakos",
-          "This is a longer card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.",
-          "#",
-          "https://pbs.twimg.com/profile_images/1524724861444231168/tiFbjmfz_400x400.jpg"
+          "Predoctoral researcher for the ActEU project at Aristotle University of Thessaloniki. Interested in comparative political behavior, political psychology, and survey methodology.",
+          "https://twitter.com/gotinakos",
+          "img/5frKLhQ0.png"
         )
     ),
     div(class = "col-sm-6 col-md-4",
@@ -1126,7 +1126,7 @@ contested_dat %>% #count(party) %>% pull(party) %>% unique() %>% dput()
   ggthemes::theme_hc() +
   labs(x = "Targeting criteria", y = "% of budget spent on targeting method", #title = "Contested targeted interests (US midterms 2022)", subtitle = " ", 
        caption = "Source: Meta Ad Library and data compiled by Who Targets Me. Data Viz: Fabio Votta (@favstats).") +
-  theme(legend.position = "bottom", plot.title = element_text(size = 28, face = "bold", hjust = 1.25), text=element_text(family="mono", face = "bold"), plot.caption = element_text(hjust = -1.7)) +
+  theme(legend.position = "bottom", plot.title = element_text(size = 28, face = "bold", hjust = 1.25), text=element_text(family="mono", face = "bold")) +
   guides(fill=guide_legend(nrow=2,byrow=TRUE)) 
     
 }
@@ -1415,6 +1415,10 @@ ggsave(paste0("img/", partyyy, "_maps.png"), width = 12, height = 12, dpi = 900,
 
 }
 
+
+# geo_transformed %>% 
+#   count(admin1_code, sort = T) %>% 
+#   as_tibble()
 ```
 
 

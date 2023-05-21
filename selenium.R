@@ -226,14 +226,14 @@ retrieve_spend_daily <- function(id, the_date) {
 
 # daily_spending <- readRDS("data/daily_spending.rds")
 # Apr 17, 2023 - May 16, 2023
-# 13 February 2023
-timelines <- seq.Date(as.Date("2023-05-12"), as.Date("2023-05-18"), by = "day")
-
-daily_spending <- expand_grid(unique(ggl_spend$Advertiser_ID), timelines) %>%
-  set_names(c("advertiser_id", "timelines")) %>%
-  split(1:nrow(.)) %>%
-  map_dfr_progress(~{retrieve_spend_daily(.x$advertiser_id, .x$timelines)})
-# 
+  # 13 February 2023
+  timelines <- seq.Date(as.Date("2023-05-12"), as.Date("2023-05-18"), by = "day")
+  
+  daily_spending <- expand_grid(unique(ggl_spend$Advertiser_ID), timelines) %>%
+    set_names(c("advertiser_id", "timelines")) %>%
+    split(1:nrow(.)) %>%
+    map_dfr_progress(~{retrieve_spend_daily(.x$advertiser_id, .x$timelines)})
+  # 
 # daily_spending <- daily_spending %>%
 #   bind_rows(missings) %>%
 #   distinct(advertiser_id, date, .keep_all = T)
