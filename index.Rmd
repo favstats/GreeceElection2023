@@ -261,7 +261,9 @@ add_ribbons2 <- function(x, adv, col) {
 ```
 
 
-<!-- ### Daily Spend -->
+### Meta {.tabset .tabset-fade .tabset-pills}
+
+#### Daily Spend
 
 
 
@@ -329,56 +331,74 @@ add_ribbons2 <- function(x, adv, col) {
 #   hchart('area', hcaes(x = 'date_produced', y = 'spend', group = "party"))
 
 ## start here
-# me_advertisers <- read_csv("data/me_advertisers.csv")
-# hc_data <-  more_data %>% 
-#   # mutate(advertiser_id = as.character(advertiser_id)) %>% 
-#     left_join(me_advertisers %>% rename(advertiser_id = page_id) %>% 
-#                   select(advertiser_id, party)) %>% 
-#     drop_na(party) %>%
-#     group_by(date_produced, party) %>% 
-#     summarize(spend  = sum(spend)) %>% 
-#     ungroup() %>%
-#   # spread(key = party, value = spend, fill = 0) %>%
-#   # arrange(date_produced) %>%
-#   # mutate(across(starts_with("50PLUS"):(last_col()), ~cumsum(.), .names = "cumulative_{.col}")) %>%
-#   # select(date_produced, starts_with("cumulative")) %>%
-#   # rename_with(~str_remove(., "cumulative_"), starts_with("cumulative")) %>%
-#   # pivot_longer(-date_produced, names_to = "party", values_to = "spend")  %>%
-#   group_by(party) %>%
-#   mutate(total_spend = max(spend)) %>%
-#   ungroup()  %>%
-#   left_join(color_dat, by = "party") %>%
-#   mutate(party = as.factor(party)) %>% 
-#   mutate(party = fct_reorder(party, total_spend))
-# 
-# saveRDS(hc_data, "data/hc_data.rds")
-# 
-# color_order <- hc_data %>% 
-#   distinct(party, .keep_all = T) %>% 
-#   arrange(party) %>% 
-#   pull(colors)
-# 
-# 
-# hc_data %>%
-#   mutate(`Daily Spend` = spend) %>% 
-#   mutate(Date = date_produced) %>% 
-#   hchart("area", hcaes(x = Date, y = `Daily Spend`, group = party, fill = colors)) %>%
-#   hc_plotOptions(    area = list(
-#       stacking = "normal",
-#       lineWidth = 1,
-#       marker = list(enabled = FALSE)
-#     )) %>%
-#   # hc_legend(share = TRUE)%>%
-#   hc_colors(color_order)%>%
-#   hc_tooltip(
-#     shared = TRUE,
-#     positioner = JS("function (labelWidth, labelHeight, point) {
-#         return { x: 200, y: this.chart.plotTop };
-#     }")
-#   ) 
-  # hc_colors(levels(hc_data$party))
-  # hc_colors(color_dat$colors[as.character(unique(hc_data$party))])
-# 
+
+more_data <- dir("data/reports", full.names = T) %>%
+  
+    map_dfr(~{#print(.x)
+        yo <- read.csv(.x) %>% mutate(path = .x)
+        return(yo)
+            }) %>%
+    mutate(date_produced = str_remove_all(path, "data/reports/FacebookAdLibraryReport_|_GR_yesterday_advertiser\\.csv")) %>%
+    mutate(date_produced = lubridate::ymd(date_produced)) %>%
+  drop_na(date_produced) %>% 
+    janitor::clean_names()%>% #rename(advertiser_id = page_id) %>%
+    mutate(spend = readr::parse_number(amount_spent_eur)) %>%
+    mutate(spend = ifelse(spend == 100, 1, spend)) %>%
+    # distinct(page_id, .keep_all = T) %>%
+    filter(str_detect(page_name, "Global Space Conference on Climate Change|de Alliantie|PvdA - GroenLinks", negate = T)) %>%
+    mutate(page_id = as.character(page_id))
+
+# me_advertisers <- read_csv("data/wtm-advertisers-gr-2023-05-20T08_49_00.571Z.csv")
+hc_data <-  more_data %>%
+  # mutate(advertiser_id = as.character(advertiser_id)) %>%
+    left_join(election_dat30 %>%
+                distinct(internal_id, party) %>% 
+                  select(page_id = internal_id, party)) %>%
+    drop_na(party) %>%
+    group_by(date_produced, party) %>%
+    summarize(spend  = sum(spend)) %>%
+    ungroup() %>%
+  # spread(key = party, value = spend, fill = 0) %>%
+  # arrange(date_produced) %>%
+  # mutate(across(starts_with("50PLUS"):(last_col()), ~cumsum(.), .names = "cumulative_{.col}")) %>%
+  # select(date_produced, starts_with("cumulative")) %>%
+  # rename_with(~str_remove(., "cumulative_"), starts_with("cumulative")) %>%
+  # pivot_longer(-date_produced, names_to = "party", values_to = "spend")  %>%
+  group_by(party) %>%
+  mutate(total_spend = max(spend)) %>%
+  ungroup()  %>%
+  left_join(color_dat, by = "party") %>%
+  mutate(party = as.factor(party)) %>%
+  mutate(party = fct_reorder(party, total_spend))
+
+saveRDS(hc_data, "data/hc_data.rds")
+
+color_order <- hc_data %>%
+  distinct(party, .keep_all = T) %>%
+  arrange(party) %>%
+  pull(colors)
+
+
+hc_data %>%
+  mutate(`Daily Spend` = spend) %>%
+  mutate(Date = date_produced) %>%
+  hchart("area", hcaes(x = Date, y = `Daily Spend`, group = party, fill = colors)) %>%
+  hc_plotOptions(    area = list(
+      stacking = "normal",
+      lineWidth = 1,
+      marker = list(enabled = FALSE)
+    )) %>%
+  # hc_legend(share = TRUE)%>%
+  hc_colors(color_order)%>%
+  hc_tooltip(
+    shared = TRUE,
+    positioner = JS("function (labelWidth, labelHeight, point) {
+        return { x: 200, y: this.chart.plotTop };
+    }")
+  )
+# hc_colors(levels(hc_data$party))
+# hc_colors(color_dat$colors[as.character(unique(hc_data$party))])
+
 # color_dat$colors[levels(hc_data$party)]
 
 # more_data %>% 
@@ -386,7 +406,6 @@ add_ribbons2 <- function(x, adv, col) {
 
 ```
 
-### Meta {.tabset .tabset-fade .tabset-pills}
 
 
 #### `r last30days_string` (Last 30 days)
@@ -610,6 +629,23 @@ add_ribbons2("KKE", "darkred")
 
 ### Combined Stats
 
+```{r}
+bothsum30<- sum30 %>% 
+  bind_rows(sum30_ggl) %>% 
+  summarize(total_spend_formatted = sum(total_spend_formatted),
+            total_num_ads = sum(total_num_ads))
+
+```
+
+
+In total, political parties spend €`r scales::comma_format()(bothsum30$total_spend_formatted)` and ran `r bothsum30$total_num_ads` ad copies on Google and Meta in the last 30 days (of available data).
+
+
+The graph below shows how spending differed between Meta and Google platforms. In each row on the right hand side, you can see how much in total was spend by each party across both platforms.
+
+
+
+
 
 <!-- #### Meta vs. Google -->
 
@@ -618,7 +654,9 @@ add_ribbons2("KKE", "darkred")
 
 ## Spending per Targeting Criteria {.tabset .tabset-fade .tabset-pills}
 
-How much did campaigns spend on different targeting methods?
+How much did campaigns spend on different targeting methods? The graphs below show spending *overall* across all parties and *by party*.
+
+> Note: targeting criteria can overlap so the percentages do not sum up to 100%.
 
 
 
@@ -1122,7 +1160,12 @@ election_dat7 %>%
     scale_fill_parties()
 ```
 
-## Geo Targeting {.tabset .tabset-fade .tabset-pills}
+## Geographical Targeting {.tabset .tabset-fade .tabset-pills}
+
+The graphs below show various kinds of *location targeting* that parties engaged in on Meta platforms.
+
+> Note: targeting criteria can overlap so the percentages do not sum up to 100%.
+
 
 ### `r last30days_string` (Last 30 days) {.tabset .tabset-fade .tabset-pills}
 
@@ -1419,7 +1462,9 @@ walk(retrieve_maps)
 ![](img/MeRA25_maps.png)
 
 
-## Geo Exclusion {.tabset .tabset-fade .tabset-pills}
+## Geographical Exclusion {.tabset .tabset-fade .tabset-pills}
+
+On Meta, political parties can also **exclude** certain geographical units. The graphs below show which locations were excluded from seeing political advertisements and how much money the parties spend on these ads.
 
 ### `r last30days_string` (Last 30 days) {.tabset .tabset-fade .tabset-pills}
 
@@ -1528,6 +1573,10 @@ tm <- treemap(region_dat, index = c("party", "region"),
 
 
 ## Age Targeting {.tabset .tabset-fade .tabset-pills}
+
+The graphs below show targeting by age groups and how much percentage of party budgets were spent on them.
+
+> Note: targeting criteria can overlap so the percentages do not sum up to 100%.
 
 ### `r last30days_string` (Last 30 days)
 
@@ -1672,6 +1721,11 @@ age_targeting7 %>%
 
 ## Gender Targeting {.tabset .tabset-fade .tabset-pills}
 
+The graphs below show targeting by gender and how much percentage of party budgets were spent on them.
+
+> Note: targeting criteria can overlap so the percentages do not sum up to 100%.
+
+
 ### `r last30days_string` (Last 30 days)
 
 ```{r, fig.width= 8, fig.height=5, dpi = 300}
@@ -1747,8 +1801,128 @@ gender_targeting %>%
     
 ```
 
+## Education Targeting {.tabset .tabset-fade .tabset-pills}
+
+The graphs below show targeting by education levels and how much percentage of party budgets were spent on them.
+
+
+### `r last30days_string` (Last 30 days)
+
+```{r, fig.width= 8, fig.height=5, dpi = 300}
+
+
+calc_edu_perc <- function(x) {
+    
+total_sppppeen <- x %>% 
+# filter(coalition == "Coalizione di centro-destra") %>% 
+  mutate(total_spend = total_spend_formatted) %>%
+  distinct(internal_id, .keep_all = T)  %>%
+  # mutate(total_spend = readr::parse_number(total_spend_formatted)) %>%
+  mutate(total_spend = ifelse(total_spend == 50, 1, total_spend)) %>% 
+  select(internal_id, total_spend) %>% 
+  arrange(desc(total_spend)) %>% 
+  summarize(total_budget = sum(total_spend)) %>% 
+  ungroup()
+
+x %>% 
+    filter(type == "detailed") %>%
+    filter(detailed_type == "DEMOGRAPHICS") %>% 
+  filter(!is_exclusion) %>% 
+    # count(value, sort = T) %>% 
+    filter(str_detect(value, "grad school|degree|	|Master|[c|C]ollege|degree|[H|h]igh school|Professional degree")) %>% 
+    filter(str_detect(value, "Wine", negate = T)) %>% 
+  mutate(total_spend = total_spend_formatted) %>%
+  mutate(total_spend = ifelse(total_spend == 50, 1, total_spend)) %>% 
+  # filter(coalition == "Coalizione di centro-destra") %>%  
+  # filter(total_spend_pct != 0) %>% 
+  # group_by(internal_id) %>%
+  # mutate(n_ages = n()) %>% #count(n_ages, sort = T)
+  # ungroup()%>% 
+  mutate(spend_per = total_spend * total_spend_pct) %>% 
+  group_by(value) %>% 
+  summarize(spend_per = sum(spend_per)) %>% 
+  bind_cols(total_sppppeen) %>% 
+  mutate(perc = spend_per/total_budget) %>% 
+            mutate(coalition = x$coalition[1],
+                   party = x$party[1],
+                   election = x$election[1])
+}
+
+election_dat30 %>% 
+    group_split(party) %>% 
+    map_dfr(calc_edu_perc) %>% 
+     # mutate(coalition = fct_relevel(coalition, c("Coalizione di centro-sinistra",
+                                  # "Terzo Polo",
+                                  # "Coalizione di centro-destra"))) %>% 
+    mutate(value = fct_reorder(value, perc)) %>% 
+    ggplot(aes(value, perc, fill = party)) +
+    geom_col(alpha = 0.8) +
+    facet_wrap(~party) +
+    coord_flip() +
+    ggthemes::theme_hc() +
+    # scale_fill_manual(values = c("#ef3e3e", "#0039aa", "#0a6be1")) +
+    theme(legend.position = "none",
+          panel.spacing=unit(1,"lines")) +
+    scale_y_continuous(labels = scales::percent) +
+    # scale_x_discrete(breaks = c("18", "24",
+    #                             "34", "44",
+    #                             "54", "65+")) +
+    labs(y = "% Budget Spend on Education",
+         x = "Education\n", 
+       caption = "Source: Meta Ad Library and data compiled by Who Targets Me. Data Viz: Fabio Votta (@favstats).")   +
+  geom_text(size = 3.5, color = "black", vjust="inward",hjust="inward",
+             aes(y = perc, label = paste0(round(perc*100, 2), "%"))) +
+    scale_fill_parties()
+    
+
+
+    
+```
+
+### `r last7days_string` (Last 7 days)
+
+```{r, fig.width= 8, fig.height=5, dpi = 300}
+
+election_dat7 %>% 
+    group_split(party) %>% 
+    map_dfr(calc_edu_perc) %>% 
+     # mutate(coalition = fct_relevel(coalition, c("Coalizione di centro-sinistra",
+     #                              "Terzo Polo",
+     #                              "Coalizione di centro-destra"))) %>% 
+    mutate(value = fct_reorder(value, perc)) %>% 
+    ggplot(aes(value, perc, fill = party)) +
+    geom_col(alpha = 0.8) +
+    facet_wrap(~party) +
+    coord_flip() +
+    ggthemes::theme_hc() +
+    # scale_fill_manual(values = c("#ef3e3e", "#0039aa", "#0a6be1")) +
+    theme(legend.position = "none",
+          panel.spacing=unit(1,"lines")) +
+    scale_y_continuous(labels = scales::percent) +
+    # scale_x_discrete(breaks = c("18", "24",
+    #                             "34", "44",
+    #                             "54", "65+")) +
+    labs(y = "% Budget Spend on Education",
+         x = "Education\n", 
+       caption = "Source: Meta Ad Library and data compiled by Who Targets Me. Data Viz: Fabio Votta (@favstats).")   +
+  geom_text(size = 3.5, color = "black", vjust="inward",hjust="inward",
+             aes(y = perc, label = paste0(round(perc*100, 2), "%"))) +
+    scale_fill_parties()
+    
+
+
+```
+
+
+
+
 
 ## Job Targeting {.tabset .tabset-fade .tabset-pills}
+
+The graphs below show targeting by job (sectors) and how much percentage of party budgets were spent on them.
+
+
+> Note: targeting criteria can overlap so the percentages do not sum up to 100%.
 
 
 ### `r last30days_string` (Last 30 days)

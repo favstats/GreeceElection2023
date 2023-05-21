@@ -11,11 +11,12 @@ tstamp <- Sys.time()
 # read_csv("data/brem")
 
 more_data <- dir("data/reports", full.names = T) %>%
+  
     map_dfr(~{print(.x)
         yo <- read.csv(.x) %>% mutate(path = .x)
         return(yo)
             }) %>%
-    mutate(date_produced = str_remove_all(path, "data/reports/FacebookAdLibraryReport_|_DE_last_30_days_Bremen\\.csv")) %>%
+    mutate(date_produced = str_remove_all(path, "data/reports/FacebookAdLibraryReport_|_GR_last_30_days\\.csv")) %>%
     mutate(date_produced = lubridate::ymd(date_produced)) %>%
     janitor::clean_names()%>% #rename(advertiser_id = page_id) %>%
     mutate(spend = readr::parse_number(amount_spent_eur)) %>%
@@ -375,6 +376,22 @@ all_ads %>%
   mutate(link = paste0("https://adstransparency.google.com/advertiser/", Advertiser_ID)) %>% 
   openxlsx::write.xlsx("data/gr_ggl_advertisers.xlsx")
   
+
+all_ads %>% 
+  mutate(Date_Range_Start = lubridate::as_date(Date_Range_Start))  %>%
+  filter(Date_Range_Start >= as.Date("2023-04-20")) %>% 
+  filter(str_detect(Regions, "GR")) %>% 
+  # mutate(Spend_Range_Max_EUR = sum(Spend_Range_Min_EUR))%>% 
+  # group_by(Advertiser_ID, Advertiser_Name) %>% 
+  # summarize(Spend_EUR = sum(Spend_Range_Min_EUR)) %>% 
+  # ungroup() %>% 
+  arrange(-Spend_Range_Min_EUR) %>% View
+
+all_ads %>% 
+  mutate(Date_Range_Start = lubridate::as_date(Date_Range_Start))  %>%
+  filter(Date_Range_Start >= as.Date("2023-04-20")) %>% 
+  filter(str_detect(Regions, "GR")) %>% 
+  count(Age_Targeting, sort  =T)
 
 wk_spend <- read_csv("data/google-political-ads-advertiser-weekly-spend.csv")
 
@@ -796,11 +813,11 @@ the_order <- platform_dat %>%
 platform_dat %>% 
   # mutate(party = fct_reorder(party, total)) %>% 
   left_join(lab_dat) %>% 
-  mutate(party = factor(party, the_order)) %>% 
+  mutate(party = factor(party, c(the_order, "KKE"))) %>% 
   mutate(platform = factor(platform, c("Meta", "Google"))) %>% 
-  drop_na(party) %>% 
+  # drop_na(party) %>% 
   ggplot(aes(party, perc))  +
-  geom_col(aes(fill = platform), position = position_stack(reverse = T), alpha = 0.8) +
+  geom_col(aes(fill = platform), position = position_stack(reverse = T), alpha = 0.8, width = 0.5) +
   coord_flip() +
   geom_label(aes(label = labb),y=1.225,
              position = position_stack(vjust = 0.5),
