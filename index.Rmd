@@ -691,7 +691,7 @@ add_ribbons2("KKE", "darkred")
 ```
 
 
-### Combined Stats
+### Combined Stats {.tabset .tabset-fade .tabset-pills}
 
 ```{r}
 bothsum30<- sum30 %>% 
@@ -702,16 +702,60 @@ bothsum30<- sum30 %>%
 ```
 
 
+
+#### Total Spend: `r last30days_string` (Last 30 days)
+
+
 In total, political parties spend €`r scales::comma_format()(bothsum30$total_spend_formatted)` and ran `r bothsum30$total_num_ads` ad copies on Google and Meta in the last 30 days (of available data).
 
+```{r}
 
-The graph below shows how spending differed between Meta and Google platforms. In each row on the right hand side, you can see how much in total was spend by each party across both platforms.
+get_table_dat(election_dat30, party) %>% 
+  arrange(desc(parse_number(`Total Spend`))) %>% 
+  bind_rows(ggl_all) %>% 
+  janitor::clean_names() %>% 
+  mutate(total_spend = parse_number(total_spend)) %>% 
+  mutate(number_of_ads = parse_number(number_of_ads)) %>% 
+  group_by(coalizione_partito) %>% 
+  summarize(number_of_ads = sum(number_of_ads),
+            total_spend = sum(total_spend)) %>% 
+  ungroup()  %>% 
+  arrange(-total_spend) %>% 
+  mutate(number_of_ads = scales::comma(number_of_ads)) %>%  
+  mutate(total_spend = scales::comma(total_spend)) %>% 
+        mutate(total_spend = paste0("€", total_spend)) %>% 
+  set_names(c("Coalizione/Partito", "Number of Ads", "Total Spend")) %>% 
+  arrange(desc(parse_number(`Total Spend`))) %>% 
+  gt(
+    rowname_col = "Coalizione/Partito"
+    # groupname_col = "group"
+  ) %>% 
+  fmt_markdown(columns = everything())  %>% 
+  cols_align(
+    align = "center"
+  ) %>% 
+  gtExtras::gt_theme_538() %>% 
+  tab_options(table.width = pct(100)) %>%
+add_ribbons2("EL", "#5493ce") %>%
+add_ribbons2("ND", "#1b5cc7") %>%
+add_ribbons2("PASOK", "#01783d") %>%
+add_ribbons2("MeRA25", "#ef3f24") %>%
+add_ribbons2("SYRIZA", "#ee808f")  %>%
+add_ribbons2("KKE", "darkred") 
+```
 
 
 
 
 
-<!-- #### Meta vs. Google -->
+
+
+
+
+
+#### Meta vs. Google
+
+The graph below shows how spending differed between Meta and Google platforms. In each row on the right hand side, you can see how much in total was spend by each party across both platforms (in the last 30 days).
 
 ![](img/ggl_vs_meta.png)
 
@@ -1440,7 +1484,7 @@ retrieve_maps <- function(partyyy) {
     left_join(total_sppppeen) %>% 
     mutate(perc = total_spend/totalooo*100))  %>%
   bind_rows(lat_longs_sf, .) %>% 
-  filter(party == partyyy) %>% 
+  filter(party == partyyy) %>%
   distinct(party, name, .keep_all = T)
   
   
@@ -1469,13 +1513,14 @@ geo_region %>%
             # arrange(-perc) %>% 
             #   slice(1:10) %>% 
             #   ungroup() %>% 
-              distinct(name, .keep_all = T),
+              distinct(party, name, .keep_all = T),
     aes(label = name, geometry = geometry),
     stat = "sf_coordinates", #max.overlaps = 1,
     min.segment.length = 0
-  )
+  ) +
+  facet_wrap(~party)
 
-ggsave(paste0("img/", partyyy, "_maps.png"), width = 12, height = 12, dpi = 900, bg  = "white")
+ggsave(paste0("img/gr_maps.png"), width = 12, height = 8, dpi = 900, bg  = "white")
 
 }
 

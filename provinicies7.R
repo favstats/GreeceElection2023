@@ -836,6 +836,31 @@ platform_dat %>%
 ggsave("img/ggl_vs_meta.png", width = 6, height = 8, dpi = 300)
 
 
+platform_dat %>% 
+  # mutate(party = fct_reorder(party, total)) %>% 
+  left_join(lab_dat) %>% 
+  mutate(party = factor(party, c(the_order, "KKE"))) %>% 
+  mutate(platform = factor(platform, c("Meta", "Google"))) %>% 
+  # drop_na(party) %>% 
+  ggplot(aes(party, perc))  +
+  geom_col(aes(fill = platform), position = position_stack(reverse = T), alpha = 0.8, width = 0.5) +
+  coord_flip() +
+  geom_label(aes(label = labb),y=1.225,
+             position = position_stack(vjust = 0.5),
+             hjust = 1, label.size = NA,
+             size = 4) + expand_limits(y = 1.2) +
+  geom_hline(yintercept = 0.5, linetype = "dashed") +
+  scale_y_continuous(labels = scales::percent, breaks = c(0, 0.25, 0.5, 0.75, 1)) +
+  scale_fill_manual("Platform", values = c("#ff2700", "#008fd5") %>% rev) +
+  ggthemes::theme_hc() +
+  labs(x = "", y = "% of budget spent on Platform", title = "Graph 1: Meta vs. Google", #subtitle = "Where do Greek parties focus their money?", 
+       subtitle = str_wrap("\n\n\n\nShare of budget alloted to advertising platform by party Apr 20 - May 19 2023 (Source: Author's elaboration on Meta Ad Library & Google Transparency Report)")) +
+  theme(legend.position = "bottom", plot.title = element_text(size = 25, face = "bold", hjust = -1.5), text=element_text(family="mono", face = "bold"), 
+        plot.subtitle = element_text(size = 9, hjust = 1, vjust = 0)) +
+  guides(fill=guide_legend(nrow=1,byrow=TRUE)) 
+
+ggsave("img/ggl_vs_meta_artc.png", width = 6, height = 8, dpi = 900)
+
 
 platform_dat %>% 
   distinct(party, .keep_all = T) %>%
