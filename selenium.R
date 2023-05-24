@@ -1,9 +1,7 @@
 
-library(RSelenium)
-
 # https://adstransparency.google.com/advertiser/AR09355418985304162305?political&region=NL&preset-date=Last%207%20days
 
-
+library(tidyverse)
 library(netstat)
 library(RSelenium)
 # port <- netstat::free_port()
@@ -355,7 +353,7 @@ retrieve_spend_custom <- function(id, from, to) {
 
 ggl_sel_sp <- unique(ggl_spend$Advertiser_ID) %>%
   # .[22] %>%
-  map_dfr_progress(~{retrieve_spend_custom(.x, "2023-04-20", "2023-05-19")})
+  map_dfr_progress(~{retrieve_spend_custom(.x, "2023-04-22", "2023-05-21")})
 
 # ggl_sel_sp %>%
 # filter(advertiser_id %in% "AR09355418985304162305")
@@ -385,7 +383,7 @@ saveRDS(ggl_sel_sp, file = "data/ggl_sel_sp.rds")
 
 ggl_sel_sp7 <- unique(ggl_spend$Advertiser_ID) %>%
   # .[22] %>%
-  map_dfr_progress(~{retrieve_spend_custom(.x, "2023-05-11", "2023-05-17")})
+  map_dfr_progress(~{retrieve_spend_custom(.x, "2023-05-14", "2023-05-21")})
 
 misssss7 <- ggl_sel_sp7$advertiser_id %>% setdiff(unique(ggl_spend$Advertiser_ID), .)
 

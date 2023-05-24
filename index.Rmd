@@ -706,7 +706,7 @@ bothsum30<- sum30 %>%
 #### Total Spend: `r last30days_string` (Last 30 days)
 
 
-In total, political parties spend €`r scales::comma_format()(bothsum30$total_spend_formatted)` and ran `r bothsum30$total_num_ads` ad copies on Google and Meta in the last 30 days (of available data).
+In total, political parties spend €`r scales::comma_format()(bothsum30$total_spend_formatted)` on Google and Meta ads in the last 30 days (of available data).
 
 ```{r}
 
@@ -1107,6 +1107,8 @@ library(tidytext)
   theme(plot.title = element_text(size = 38, face = "bold", hjust = 0.5), text=element_text(family="mono", face = "bold"), plot.caption = element_text(), plot.subtitle = element_text(hjust = 0.5, size = 20)) +
   theme(legend.position = "none") +
   facet_wrap(~party, scales = "free")
+ 
+ ggsave("img/targeting_det.png", width = 9, height = 7, dpi = 900)
 ```
 
 
@@ -1502,13 +1504,14 @@ geo_region %>%
   # facet_wrap(~party) +
     colorspace::scale_color_binned_sequential(palette = "Viridis",
             na.value = "gray10") +
-    theme(legend.position = "bottom")+ 
+    theme(legend.position = "bottom", strip.background = element_rect(fill = "lightgrey", color = NA),
+          strip.text.x = element_text(margin = margin(0.15, 0.5, 0.15, 0, "cm")))+ 
     guides(color = guide_colourbar(title = "% of Budget Spend", barwidth = 15, barheight = 0.5), size = NULL) + scale_size(guide = 'none')  +
   ggrepel::geom_text_repel(
     data = elex_dat %>%
       drop_na(cou_name_en) %>% 
       bind_rows(lat_longs_sf) %>% 
-      filter(name %in% c("Athens", "Thessaloníki", "Larissa", "Heraklion", "Kalamaria")) %>% 
+      filter(name %in% c("Athens", "Thsessaloníki", "Larissa", "Heraklion", "Kalamaria")) %>% 
             #     group_by(party) %>%
             # arrange(-perc) %>% 
             #   slice(1:10) %>% 
@@ -1775,6 +1778,9 @@ age_targeting %>%
   geom_text(size = 3.5, color = "white",
              aes(y = perc - 0.19, label = paste0(round(perc*100, 1), "%"))) +
     scale_fill_parties()
+
+ ggsave("img/targeting_age.png", width = 10, height = 7, dpi = 900)
+
     
 ```
 
@@ -1829,6 +1835,7 @@ age_targeting7 %>%
              aes(y = perc - 0.19, label = paste0(round(perc*100, 1), "%"))) +
     scale_fill_parties()
     
+
 ```
 
 
@@ -1874,6 +1881,11 @@ gender_targeting %>%
   geom_label(size = 3.5, color = "black", vjust="inward",hjust="inward",
              aes(y = perc, label = paste0(round(perc*100, 2), "%"))) +
     scale_fill_parties()
+
+
+
+ ggsave("img/targeting_gender.png", width = 8, height = 5, dpi = 900)
+
     
 ```
 
@@ -1987,6 +1999,7 @@ election_dat30 %>%
              aes(y = perc, label = paste0(round(perc*100, 2), "%"))) +
     scale_fill_parties()
     
+ ggsave("img/targeting_education.png", width = 8, height = 5, dpi = 900)
 
 
     
